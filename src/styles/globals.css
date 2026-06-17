@@ -1,0 +1,270 @@
+html,body,#__next { height: 100%; }
+body { margin: 0; font-family: Inter, system-ui, Arial, sans-serif; background: #000; color: #d8ff36; }
+* { box-sizing: border-box; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+
+body {
+  background: #0a0a0c;
+  color-scheme: dark; /* makes native pickers (date dropdown) render dark */
+}
+
+.page-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+  min-height: calc(100vh - 78px);
+  display: flex;
+  flex-direction: column;
+  gap: 28px; /* air between every top-level box on the page */
+}
+
+/* spacing is handled by the flex gap above, so neutralize stacked margins */
+.page-shell > * { margin-bottom: 0; }
+
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  min-height: calc(100vh - 78px);
+}
+
+.app-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 24px;
+  background: rgba(12, 12, 12, 0.96);
+  border-bottom: 1px solid rgba(216, 255, 54, 0.12);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-brand {
+  color: #d8ff36;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.nav-link {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: rgba(216,255,54,0.16);
+  color: #d8ff36;
+  transform: translateY(-1px);
+}
+
+.page-card {
+  background: rgba(18, 18, 20, 0.96);
+  border: 1px solid rgba(216,255,54,0.12);
+  box-shadow: 0 20px 65px rgba(0,0,0,0.25);
+  border-radius: 24px;
+  padding: 28px;
+}
+
+.page-heading {
+  color: #d8ff36;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.page-text {
+  color: rgba(255,255,255,0.75);
+  line-height: 1.8;
+  margin-bottom: 24px;
+}
+
+input, textarea, select {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  outline: none;
+  padding: 14px;
+  color-scheme: dark;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #36f3ff;
+  box-shadow: 0 0 0 4px rgba(54,243,255,0.12);
+}
+
+/* breathing room when two form fields sit directly next to each other (no label/div between) */
+input + input,
+input + textarea,
+input + select,
+textarea + input,
+textarea + textarea,
+textarea + select,
+select + input,
+select + textarea {
+  margin-top: 14px;
+}
+
+/* dark, branded date input */
+input[type="date"] { position: relative; }
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.6);
+  cursor: pointer;
+  opacity: 0.8;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
+textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.button-primary {
+  width: 100%;
+  border: none;
+  color: #040404;
+  background: linear-gradient(135deg, #d8ff36 0%, #ff36c4 100%);
+  padding: 16px 22px;
+  border-radius: 14px;
+  font-weight: 700;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+.button-primary:hover {
+  transform: translateY(-2px);
+  opacity: 0.98;
+}
+
+.button-secondary {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 14px;
+}
+
+.button-danger {
+  width: auto;
+  border: none;
+  color: #fff;
+  background: #ff36c4;
+  padding: 10px 16px;
+  border-radius: 12px;
+}
+
+.button-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(216, 255, 54, 0.16);
+  border-radius: 24px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+  padding: 36px;
+}
+
+.auth-card h1 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #d8ff36;
+  text-align: center;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #d8ff36;
+}
+
+.hero-panel {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(216, 255, 54, 0.12);
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.hero-panel h2,
+.hero-panel h1 {
+  margin-top: 0;
+  color: #d8ff36;
+}
+
+.hero-panel p {
+  color: rgba(255,255,255,0.78);
+}
+
+.card h3,
+.hero-panel h3 {
+  color: #ffffff;
+}
+
+.button-ghost {
+  width: auto;
+  border: 1px solid rgba(216,255,54,0.3);
+  background: transparent;
+  color: #d8ff36;
+  padding: 12px 18px;
+  border-radius: 14px;
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.card p,
+.card small {
+  color: rgba(255,255,255,0.72);
+}
+
+.alert {
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: rgba(216,255,54,0.08);
+  color: #d8ff36;
+  border: 1px solid rgba(216,255,54,0.2);
+}

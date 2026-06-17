@@ -1,0 +1,43 @@
+{
+  "name": "heropath",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "worker": "tsx src/worker.ts",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@fullcalendar/daygrid": "6.1.8",
+    "@fullcalendar/react": "6.1.8",
+    "@prisma/client": "5.0.0",
+    "@sendgrid/mail": "8.1.0",
+    "bcrypt": "5.1.0",
+    "bullmq": "1.87.0",
+    "dayjs": "1.11.9",
+    "dotenv": "^17.4.2",
+    "ioredis": "5.3.2",
+    "next": "14.0.0",
+    "openai": "4.5.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-query": "3.39.3",
+    "recharts": "^2.12.7",
+    "swr": "2.2.4",
+    "tailwindcss": "3.4.7",
+    "zod": "3.21.4"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "20.8.0",
+    "@types/react": "19.2.17",
+    "autoprefixer": "10.4.14",
+    "postcss": "8.4.24",
+    "prisma": "5.0.0",
+    "tsx": "4.7.0",
+    "typescript": "5.2.2"
+  }
+}

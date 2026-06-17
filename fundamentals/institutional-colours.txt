@@ -1,0 +1,5 @@
+Modo oscuro sobre Negro.
+
+Amarillo principal: #d8ff36
+Rosado secundario: #ff36c4
+Celeste complementario: #36f3ff

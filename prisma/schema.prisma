@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  avatarUrl String?
+  age       Int?
+  birthDate DateTime?
+  country   String?
+  timezone  String? // user's timezone
+  dayStartHour Int @default(8) // global: when day starts (for notifications)
+  dayEndHour Int @default(20) // global: when day ends
+  createdAt DateTime @default(now())
+  aspirations Aspiration[]
+  shortcomings Shortcoming[]
+  influences Influence[]
+  goals     Goal[]
+  feedbacks Feedback[]
+}
+
+model Aspiration {
+  id        String @id @default(cuid())
+  title     String
+  text      String
+  aiAdvice  String? // AI-generated tips/guidance toward this aspiration
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  goals     Goal[]  @relation("GoalAspirations")
+}
+
+model Shortcoming {
+  id        String @id @default(cuid())
+  title     String
+  text      String
+  aiAdvice  String? // AI-generated tips/guidance to overcome this shortcoming
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  goals     Goal[]  @relation("GoalShortcomings")
+}
+
+model Category {
+  id    String @id @default(cuid())
+  name  String @unique
+  goals Goal[]
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        String
+  strictness  String   @default("strict") // "strict" | "rigorous"
+  weekdays    Int[]    @default([0, 1, 2, 3, 4, 5, 6]) // JS getDay(): 0=Sun..6=Sat
+  weeklyTarget Int?    // rigorous: required completions per week
+  startDate   DateTime
+  endDate     DateTime
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  aspirations Aspiration[] @relation("GoalAspirations")
+  shortcomings Shortcoming[] @relation("GoalShortcomings")
+  aspirationLink String? // AI explanation of why this goal advances the linked aspirations
+  shortcomingLink String? // AI explanation of why this goal fights the linked shortcomings
+  aiAdvice    String?  // AI-generated tips for achieving this goal
+  entries     GoalEntry[]
+  score       Float    @default(100)
+  createdAt   DateTime @default(now())
+}
+
+model GoalEntry {
+  id       String   @id @default(cuid())
+  date     DateTime
+  status   Int // 0=none,1=done,2=half,3=fail,4=exception
+  note     String?
+  goal     Goal     @relation(fields: [goalId], references: [id])
+  goalId   String
+  createdAt DateTime @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  date      DateTime
+  message   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model Influence {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  name         String
+  gender       String   // "hombre" | "mujer" | "otro" | "neutral"
+  relationship String
+  type         String   // "shadow" | "torch"
+  description  String
+  messages     InfluenceMessage[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model InfluenceMessage {
+  id          String    @id @default(cuid())
+  influence   Influence @relation(fields: [influenceId], references: [id], onDelete: Cascade)
+  influenceId String
+  goalId      String?   // optional: messages tied to a specific goal
+  message     String
+  context     String?   // "daily" | "goal_home" | "goal_created" | "general"
+  usedAt      DateTime?
+  timesShown  Int       @default(0)
+  createdAt   DateTime  @default(now())
+}
