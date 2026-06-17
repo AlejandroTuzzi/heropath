@@ -168,3 +168,5 @@ prisma/schema.prisma           # modelo de datos
 ---
 
 *Hecho con ❤️ para convertir grandes anhelos en pasos diarios.*
+#   h e r o p a t h  
+ 
