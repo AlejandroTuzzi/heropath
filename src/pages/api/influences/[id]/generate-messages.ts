@@ -19,6 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const messages = await generateGeneralMessages(influence, { aspirations, shortcomings, goals })
     if (messages.length) {
+      // Replace the previous general messages (keep goal-specific ones)
+      await prisma.influenceMessage.deleteMany({ where: { influenceId: influence.id, context: 'general' } })
       await prisma.influenceMessage.createMany({
         data: messages.map(m => ({ influenceId: influence.id, message: m, context: 'general' }))
       })
