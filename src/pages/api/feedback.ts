@@ -23,10 +23,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!userId || !date) return res.status(400).json({ error: 'missing userId or date' })
 
     try {
-      const day = new Date(date)
-      day.setHours(0, 0, 0, 0)
+      const dstr = String(date).slice(0, 10)
+      const day = new Date(dstr + 'T00:00:00.000Z') // UTC midnight (timezone-stable)
       const next = new Date(day)
-      next.setDate(next.getDate() + 1)
+      next.setUTCDate(next.getUTCDate() + 1)
 
       const entries = await prisma.goalEntry.findMany({
         where: { goal: { userId }, date: { gte: day, lt: next } },

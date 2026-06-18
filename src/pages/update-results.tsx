@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import dayjs from 'dayjs'
+import dayjs from '../lib/day'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
@@ -27,13 +27,13 @@ export default function UpdateResults() {
   const [feedback, setFeedback] = useState('')
 
   const allGoals = Array.isArray(goalsData) ? goalsData : []
-  const dayObj = typeof date === 'string' ? dayjs(date) : dayjs()
+  const dayObj = typeof date === 'string' ? dayjs.utc(date) : dayjs.utc()
   const weekday = dayObj.day() // 0=Sun..6=Sat
   // Only goals scheduled this weekday and active on this date
   const scheduled = allGoals.filter((g: any) => {
     const days = g.weekdays && g.weekdays.length ? g.weekdays : [0, 1, 2, 3, 4, 5, 6]
-    const inRange = (dayObj.isAfter(dayjs(g.startDate)) || dayObj.isSame(dayjs(g.startDate), 'day')) &&
-      (dayObj.isBefore(dayjs(g.endDate)) || dayObj.isSame(dayjs(g.endDate), 'day'))
+    const inRange = (dayObj.isAfter(dayjs.utc(g.startDate)) || dayObj.isSame(dayjs.utc(g.startDate), 'day')) &&
+      (dayObj.isBefore(dayjs.utc(g.endDate)) || dayObj.isSame(dayjs.utc(g.endDate), 'day'))
     return days.includes(weekday) && inRange
   })
   // If a single goalId is passed (clicked a calendar cell), focus only that goal

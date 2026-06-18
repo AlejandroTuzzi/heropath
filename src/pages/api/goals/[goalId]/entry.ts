@@ -20,8 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const entryDate = date ? new Date(date) : new Date()
-      entryDate.setHours(0, 0, 0, 0) // midnight
+      // Store the calendar date at UTC midnight (timezone-stable)
+      const dstr = (date ? String(date) : new Date().toISOString()).slice(0, 10)
+      const entryDate = new Date(dstr + 'T00:00:00.000Z')
 
       // Find or create entry
       let entry = await prisma.goalEntry.findFirst({

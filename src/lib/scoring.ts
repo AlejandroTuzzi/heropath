@@ -1,4 +1,10 @@
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from './day'
+import type { Dayjs } from 'dayjs'
+
+// All calendar dates are handled in UTC (see ./day). u() parses any stored
+// date as a UTC-mode dayjs so weekday/format/compare are timezone-stable.
+const u = (d: string | Date | Dayjs) => dayjs.utc(d as any)
+const uNow = () => dayjs.utc()
 
 // Daily report statuses
 export const STATUS = {
@@ -68,11 +74,11 @@ const round1 = (n: number) => Math.round(n * 10) / 10
 
 // ---- STRICT: per scheduled day. Done +1, Half +0.5, Exception 0, Fail -(occurrence index) ----
 export function strictScore(goal: GoalLike, entries: EntryLike[]): number {
-  const start = dayjs(goal.startDate)
+  const start = u(goal.startDate)
   const days = wd(goal)
   let score = 100
   for (const e of entries) {
-    const date = dayjs(e.date)
+    const date = u(e.date)
     if (!days.includes(date.day())) continue
     if (e.status === STATUS.DONE) score += 1
     else if (e.status === STATUS.HALF) score += 0.5
@@ -83,14 +89,14 @@ export function strictScore(goal: GoalLike, entries: EntryLike[]): number {
 }
 
 // ---- RIGOROUS: per fully-elapsed week. (Done + 0.5*Half) >= weeklyTarget => +1 else -1 ----
-export function rigorousScore(goal: GoalLike, entries: EntryLike[], now: Dayjs = dayjs()): number {
+export function rigorousScore(goal: GoalLike, entries: EntryLike[], now: Dayjs = uNow()): number {
   const days = wd(goal)
   const target = goal.weeklyTarget || 1
   const currentWeek = weekStart(now).format('YYYY-MM-DD')
 
   const buckets = new Map<string, number>()
   for (const e of entries) {
-    const date = dayjs(e.date)
+    const date = u(e.date)
     if (!days.includes(date.day())) continue
     const key = weekStart(date).format('YYYY-MM-DD')
     if (key === currentWeek) continue // current week is provisional, not yet scored
@@ -107,19 +113,19 @@ export function rigorousScore(goal: GoalLike, entries: EntryLike[], now: Dayjs =
   return round1(score)
 }
 
-export function computeScore(goal: GoalLike, entries: EntryLike[], now: Dayjs = dayjs()): number {
+export function computeScore(goal: GoalLike, entries: EntryLike[], now: Dayjs = uNow()): number {
   return goal.strictness === 'rigorous'
     ? rigorousScore(goal, entries, now)
     : strictScore(goal, entries)
 }
 
 // Past scheduled days (before today) without a report — "pendientes"
-export function pendingDays(goal: GoalLike, entries: EntryLike[], now: Dayjs = dayjs()): string[] {
+export function pendingDays(goal: GoalLike, entries: EntryLike[], now: Dayjs = uNow()): string[] {
   const days = wd(goal)
-  const start = dayjs(goal.startDate).startOf('day')
-  const end = dayjs(goal.endDate).startOf('day')
+  const start = u(goal.startDate).startOf('day')
+  const end = u(goal.endDate).startOf('day')
   const today = now.startOf('day')
-  const reported = new Set(entries.filter(e => e.status !== STATUS.NONE).map(e => dayjs(e.date).format('YYYY-MM-DD')))
+  const reported = new Set(entries.filter(e => e.status !== STATUS.NONE).map(e => u(e.date).format('YYYY-MM-DD')))
   const pend: string[] = []
   let d = start
   while (d.isBefore(today) && (d.isBefore(end) || d.isSame(end, 'day'))) {
@@ -131,16 +137,16 @@ export function pendingDays(goal: GoalLike, entries: EntryLike[], now: Dayjs = d
 }
 
 // Cumulative score points for charts
-export function scoreSeries(goal: GoalLike, entries: EntryLike[], now: Dayjs = dayjs()): { label: string; score: number }[] {
+export function scoreSeries(goal: GoalLike, entries: EntryLike[], now: Dayjs = uNow()): { label: string; score: number }[] {
   const series = [{ label: 'Inicio', score: 100 }]
-  const byDate = new Map(entries.map(e => [dayjs(e.date).format('YYYY-MM-DD'), e.status]))
+  const byDate = new Map(entries.map(e => [u(e.date).format('YYYY-MM-DD'), e.status]))
 
   if (goal.strictness === 'rigorous') {
     const sub = rigorousSeries(goal, entries, now)
     return [series[0], ...sub]
   }
 
-  const start = dayjs(goal.startDate).startOf('day')
+  const start = u(goal.startDate).startOf('day')
   const days = wd(goal)
   let score = 100
   let d = start
@@ -166,7 +172,7 @@ function rigorousSeries(goal: GoalLike, entries: EntryLike[], now: Dayjs): { lab
   const currentWeek = weekStart(now).format('YYYY-MM-DD')
   const buckets = new Map<string, number>()
   for (const e of entries) {
-    const date = dayjs(e.date)
+    const date = u(e.date)
     if (!days.includes(date.day())) continue
     const key = weekStart(date).format('YYYY-MM-DD')
     if (key === currentWeek) continue
@@ -179,7 +185,7 @@ function rigorousSeries(goal: GoalLike, entries: EntryLike[], now: Dayjs): { lab
   let score = 100
   for (const key of Array.from(buckets.keys()).sort()) {
     score += (buckets.get(key) || 0) >= target ? 1 : -1
-    out.push({ label: 'Sem ' + dayjs(key).format('DD/MM'), score: round1(score) })
+    out.push({ label: 'Sem ' + u(key).format('DD/MM'), score: round1(score) })
   }
   return out
 }

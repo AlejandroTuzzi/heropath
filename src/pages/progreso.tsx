@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import dayjs from 'dayjs'
+import dayjs from '../lib/day'
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, ReferenceLine, Cell
@@ -84,7 +84,7 @@ export default function Progreso() {
             {allPending.slice(0, 30).map((p, i) => (
               <button key={i} type="button" className="button-ghost"
                 onClick={() => router.push(`/update-results?userId=${p.userId}&date=${p.date}&goalId=${p.goalId}`)}>
-                {dayjs(p.date).format('DD/MM')} · {p.title.length > 16 ? p.title.slice(0, 15) + '…' : p.title}
+                {dayjs.utc(p.date).format('DD/MM')} · {p.title.length > 16 ? p.title.slice(0, 15) + '…' : p.title}
               </button>
             ))}
           </div>
@@ -133,7 +133,7 @@ export default function Progreso() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {history.map((f: any) => (
               <div key={f.id} style={{ padding: '14px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <small style={{ color: '#36f3ff' }}>{dayjs(f.date).format('DD/MM/YYYY')}</small>
+                <small style={{ color: '#36f3ff' }}>{dayjs.utc(f.date).format('DD/MM/YYYY')}</small>
                 <p style={{ margin: '6px 0 0', color: 'rgba(255,255,255,0.85)', whiteSpace: 'pre-line', lineHeight: 1.6 }}>{f.message}</p>
               </div>
             ))}

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from '../../lib/day'
+import type { Dayjs } from 'dayjs'
 import { STATUS_COLOR, STATUS_LABEL, pendingDays, isScheduled } from '../../lib/scoring'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
@@ -36,8 +37,8 @@ export default function GoalDetail() {
   }
 
   const weekdays: number[] = goal.weekdays && goal.weekdays.length ? goal.weekdays : [0, 1, 2, 3, 4, 5, 6]
-  const startDate = dayjs(goal.startDate)
-  const endDate = dayjs(goal.endDate)
+  const startDate = dayjs.utc(goal.startDate)
+  const endDate = dayjs.utc(goal.endDate)
   const pending = pendingDays(goal, entries)
   const delta = Math.round((goal.score - 100) * 10) / 10
   const linkedAspirations = goal.aspirations || []
@@ -259,7 +260,7 @@ export default function GoalDetail() {
             {pending.map(d => (
               <button key={d} type="button" className="button-ghost"
                 onClick={() => router.push(`/update-results?userId=${goal.userId}&date=${d}&goalId=${goal.id}`)}>
-                {dayjs(d).format('DD/MM')}
+                {dayjs.utc(d).format('DD/MM')}
               </button>
             ))}
           </div>
@@ -283,7 +284,7 @@ export default function GoalDetail() {
                 if (!scheduled) {
                   return <div key={i} style={{ aspectRatio: '1', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>{day.format('D')}</div>
                 }
-                const entry = entries.find((e: any) => dayjs(e.date).isSame(day, 'day'))
+                const entry = entries.find((e: any) => dayjs.utc(e.date).isSame(day, 'day'))
                 const status = entry?.status || 0
                 return (
                   <div key={i}

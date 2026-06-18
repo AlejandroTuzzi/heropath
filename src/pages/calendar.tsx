@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from '../lib/day'
+import type { Dayjs } from 'dayjs'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
@@ -16,7 +17,7 @@ const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 export default function CalendarPage() {
   const router = useRouter()
   const [userId, setUserId] = useState('')
-  const [month, setMonth] = useState<Dayjs>(dayjs().startOf('month'))
+  const [month, setMonth] = useState<Dayjs>(dayjs.utc().startOf('month'))
 
   const { data: goalsData } = useSWR(userId ? `/api/users/${userId}/goals` : null, fetcher)
   const goals = Array.isArray(goalsData) ? goalsData : []
@@ -45,19 +46,19 @@ export default function CalendarPage() {
   function goalsForDay(day: Dayjs) {
     return goals
       .filter((g: any) => {
-        const start = dayjs(g.startDate).startOf('day')
-        const end = dayjs(g.endDate).endOf('day')
+        const start = dayjs.utc(g.startDate).startOf('day')
+        const end = dayjs.utc(g.endDate).endOf('day')
         const days = g.weekdays && g.weekdays.length ? g.weekdays : [0, 1, 2, 3, 4, 5, 6]
         const inRange = (day.isAfter(start) || day.isSame(start, 'day')) && (day.isBefore(end) || day.isSame(end, 'day'))
         return inRange && days.includes(day.day())
       })
       .map((g: any) => {
-        const entry = (g.entries || []).find((e: any) => dayjs(e.date).isSame(day, 'day'))
+        const entry = (g.entries || []).find((e: any) => dayjs.utc(e.date).isSame(day, 'day'))
         return { goal: g, status: entry?.status || 0 }
       })
   }
 
-  const today = dayjs()
+  const today = dayjs.utc()
 
   return (
     <div className="page-shell">
@@ -66,7 +67,7 @@ export default function CalendarPage() {
           <h1 className="page-heading" style={{ marginBottom: 0 }}>Calendario</h1>
           <div className="button-row" style={{ width: 'auto' }}>
             <button className="button-ghost" type="button" onClick={() => setMonth(month.subtract(1, 'month'))}>← Mes anterior</button>
-            <button className="button-ghost" type="button" onClick={() => setMonth(dayjs().startOf('month'))}>Hoy</button>
+            <button className="button-ghost" type="button" onClick={() => setMonth(dayjs.utc().startOf('month'))}>Hoy</button>
             <button className="button-ghost" type="button" onClick={() => setMonth(month.add(1, 'month'))}>Mes siguiente →</button>
           </div>
         </div>
