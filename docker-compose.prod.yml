@@ -1,0 +1,52 @@
+# Production stack: Postgres + Redis + app + worker
+# Usage on the server:  docker compose -f docker-compose.prod.yml up -d --build
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: heropath
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    # apply pending migrations, then start Next.js
+    command: sh -c "npx prisma migrate deploy && npm run start"
+    ports:
+      - "127.0.0.1:3000:3000" # only localhost; Nginx terminates SSL and proxies
+
+  worker:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: npm run worker
+
+volumes:
+  pgdata:
+  redisdata:
