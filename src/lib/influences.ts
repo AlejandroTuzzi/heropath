@@ -11,16 +11,17 @@ export const TYPE_LABEL: Record<string, string> = { shadow: 'Sombra', torch: 'An
 
 // Tone rules shared by every influence prompt
 const TONE = `## Tono de los mensajes
-- Escribe SIEMPRE en TERCERA PERSONA, como un narrador épico que describe la escena. PROHIBIDO usar segunda persona ("tú", "te", "ti", "vas", "haz", "dale", "tu/tus") y PROHIBIDO primera persona ("yo", "mi/mis", "haré", "enciendo").
-- Refiérete a la persona influyente por su nombre. Al usuario menciónalo en tercera persona o, mejor, de forma implícita haciendo que la ACCIÓN sea el sujeto (ej: "Cada meta cumplida hoy apaga esa burla").
-- Las relaciones van en tercera persona: "su mejor amigo", "su madre" (NUNCA "tu madre").
-- Frases breves, lenguaje épico pero sobrio (nada cursi ni autoayuda genérica). Conecta con sus metas/ambiciones/falencias.
-- Para SOMBRAS: transforma la crítica en combustible; demostrar con hechos, no vengarse. Prohibido odio, resentimiento, violencia o frases tóxicas ("destrúyelo", "humíllalo").
-- Para ANTORCHAS: refuerza gratitud, confianza y continuidad; alguien cree en él, pero el trabajo lo hace él (sin volverlo dependiente de aprobación externa).
+- HÁBLALE DIRECTAMENTE AL USUARIO, en SEGUNDA PERSONA ("tú", "te", "puedes", "tu meta"). Menciona a la persona influyente por su NOMBRE, en tercera persona. NUNCA llames al usuario "el héroe", "él" o "ella" — háblale de "tú".
+- Lenguaje SIMPLE, cotidiano y directo, como te hablaría un amigo. PROHIBIDO lo rebuscado, poético o abstracto ("forjada en la perseverancia", "disipando sus dudas", "la fuerza interna", "la luz", "el eco del pasado"). Nada de metáforas ni autoayuda genérica.
+- 1 o 2 frases cortas como máximo. Concreto y claro.
+- Para SOMBRAS: di qué duda/critica esa persona y termina con que TÚ puedes demostrarle lo contrario cumpliendo. Sin odio ni venganza.
+- Para ANTORCHAS: recuerda que esa persona cree en ti, y termina invitándote a honrar esa confianza con una acción concreta. Sin volverte dependiente de su aprobación.
 
-## Ejemplos del estilo correcto (tercera persona narrada)
-- Sombra: "Cristóbal duda de su constancia. Cada entrenamiento cumplido apaga un poco esa burla."
-- Antorcha: "Su madre nunca dejó de creer en él. Hoy es un día para convertir esa fe en evidencia."`
+## Ejemplos del estilo correcto (simple, en segunda persona)
+- Sombra: "Cristóbal se ríe cuando te planteas una meta nueva, cree que no vas a poder. Hoy puedes demostrarle lo contrario."
+- Sombra: "A Cristóbal le encanta recordarte las veces que lo dejaste. Cumple hoy y dale algo nuevo de qué hablar."
+- Antorcha: "Tu madre siempre creyó que llegarías lejos. Hoy puedes darle una razón más para estar orgullosa."
+- Antorcha: "Cristina apuesta por ti aunque tú dudes. Devuélvele esa confianza cumpliendo lo de hoy."`
 
 interface Ctx {
   aspirations: { title: string }[]
@@ -74,7 +75,7 @@ ${ctxBlock(ctx)}
 ${TONE}
 
 ## Tarea
-Genera 5 mensajes breves y emocionales, EN TERCERA PERSONA NARRADA (sin "tú" ni "yo"), que conecten a ${influence.name} con el camino del usuario, según su tipo (${isShadow ? 'Sombra: convertir su duda en disciplina' : 'Antorcha: convertir su confianza en impulso'}). Cada mensaje en una línea que empiece con "• ". Responde SOLO con la lista.`
+Genera 5 mensajes breves y SIMPLES, hablándole al usuario en SEGUNDA PERSONA ("tú/te/puedes") y nombrando a ${influence.name} en tercera persona, según su tipo (${isShadow ? 'Sombra: su duda como reto que tú puedes desmentir cumpliendo' : 'Antorcha: su confianza como impulso que tú honras cumpliendo'}). Lenguaje cotidiano, nada rebuscado. Cada mensaje en una línea que empiece con "• ". Responde SOLO con la lista.`
 
   const raw = await generateTips(prompt, 400)
   return parseList(raw)
@@ -106,7 +107,7 @@ ${list}
 ${TONE}
 
 ## Tarea
-Para las personas que GENUINAMENTE conecten con esta meta, escribe 1-2 mensajes EN TERCERA PERSONA NARRADA (sin "tú" ni "yo") que aten a esa persona con esta meta concreta (Sombra = su duda como reto; Antorcha = su confianza como impulso). Omite las que no apliquen.
+Para las personas que GENUINAMENTE conecten con esta meta, escribe 1-2 mensajes SIMPLES, hablándole al usuario en SEGUNDA PERSONA ("tú/te/puedes") y nombrando a la persona en tercera persona, atándola con esta meta concreta (Sombra = su duda que tú puedes desmentir; Antorcha = su confianza que tú honras). Lenguaje cotidiano, nada rebuscado. Omite las que no apliquen.
 Responde SOLO con JSON válido, sin texto extra ni \`\`\`:
 [{ "name": "<nombre exacto>", "messages": ["mensaje corto", "mensaje corto"] }]`
 

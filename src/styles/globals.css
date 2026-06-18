@@ -108,6 +108,16 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 4px rgba(54,243,255,0.12);
 }
 
+/* dark dropdowns: solid background + readable options (the rgba bg renders white in some browsers) */
+select {
+  background-color: #15151a;
+  cursor: pointer;
+}
+select option {
+  background-color: #15151a;
+  color: #ffffff;
+}
+
 /* breathing room when two form fields sit directly next to each other (no label/div between) */
 input + input,
 input + textarea,
