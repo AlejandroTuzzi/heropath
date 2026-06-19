@@ -8,6 +8,7 @@ const links = [
   { href: '/shortcomings', label: 'Falencias' },
   { href: '/influences', label: 'Influencias' },
   { href: '/dashboard', label: 'Metas' },
+  { href: '/categories', label: 'Categorías' },
   { href: '/calendar', label: 'Calendario' },
   { href: '/progreso', label: 'Progreso' },
   { href: '/profile', label: 'Perfil' },

@@ -160,7 +160,8 @@ export default function CreateGoal() {
               ))}
             </datalist>
             <p style={{ fontSize: '12px', color: '#36f3ff', marginTop: '6px' }}>
-              Escribe una nueva o elige una existente. Por defecto: General.
+              Escribe una nueva o elige una existente. Por defecto: General.{' '}
+              <a href="/categories" style={{ color: '#d8ff36' }}>Gestionar categorías →</a>
             </p>
           </div>
 

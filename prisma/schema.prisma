@@ -50,9 +50,10 @@ model Shortcoming {
 }
 
 model Category {
-  id    String @id @default(cuid())
-  name  String @unique
-  goals Goal[]
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  goals       Goal[]
 }
 
 model Goal {

@@ -9,6 +9,7 @@ export default function Dashboard() {
   const router = useRouter()
   const [userId, setUserId] = useState<string>('')
   const [user, setUser] = useState<any>(null)
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
   const { data: goalsData } = useSWR(userId ? `/api/users/${userId}/goals` : null, fetcher)
   const { data: aspirationsData } = useSWR(userId ? `/api/users/${userId}/aspirations` : null, fetcher)
@@ -16,6 +17,10 @@ export default function Dashboard() {
   // Normalize: SWR data is undefined while loading and may be an error object on failure
   const goals = Array.isArray(goalsData) ? goalsData : []
   const aspirations = Array.isArray(aspirationsData) ? aspirationsData : []
+
+  // Categories present in the user's goals, for the filter
+  const goalCategories = Array.from(new Set(goals.map((g: any) => g.category?.name).filter(Boolean))).sort()
+  const filteredGoals = categoryFilter === 'all' ? goals : goals.filter((g: any) => g.category?.name === categoryFilter)
 
   useEffect(() => {
     const id = sessionStorage.getItem('userId')
@@ -121,11 +126,34 @@ export default function Dashboard() {
             ⭐ Score global: {goals.length ? Math.round((goals.reduce((s: number, g: any) => s + (g.score || 100), 0) / goals.length) * 10) / 10 : 100}% · Ver progreso →
           </button>
         </div>
+        {goalCategories.length > 1 && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' }}>
+            <button
+              type="button"
+              onClick={() => setCategoryFilter('all')}
+              style={{ width: 'auto', padding: '7px 14px', borderRadius: '999px', fontSize: '13px',
+                border: categoryFilter === 'all' ? '1px solid #d8ff36' : '1px solid rgba(255,255,255,0.15)',
+                background: categoryFilter === 'all' ? 'rgba(216,255,54,0.15)' : 'transparent', color: '#fff' }}>
+              Todas
+            </button>
+            {goalCategories.map((c: any) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategoryFilter(c)}
+                style={{ width: 'auto', padding: '7px 14px', borderRadius: '999px', fontSize: '13px',
+                  border: categoryFilter === c ? '1px solid #d8ff36' : '1px solid rgba(255,255,255,0.15)',
+                  background: categoryFilter === c ? 'rgba(216,255,54,0.15)' : 'transparent', color: '#fff' }}>
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
         {goals.length === 0 ? (
           <p className="page-text">No tienes metas creadas aún. ¡Crea una para empezar!</p>
         ) : (
           <div className="card-grid" style={{ marginTop: '18px' }}>
-            {goals.map((goal: any) => {
+            {filteredGoals.map((goal: any) => {
               const now = new Date()
               const isActive = new Date(goal.startDate) <= now && now <= new Date(goal.endDate)
               return (
