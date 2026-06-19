@@ -28,14 +28,14 @@ export default function Home() {
         const res = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: password.trim() })
+          body: JSON.stringify({ email: email.trim(), password: password.trim() })
         })
         if (res.ok) {
           // Find or create user
           const userRes = await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email || 'default@heropath.local', password: password, name: email || 'User' })
+            body: JSON.stringify({ email: email || 'default@heropath.local', password })
           })
           if (userRes.ok) {
             const user = await userRes.json()
@@ -84,7 +84,7 @@ export default function Home() {
   return (
     <main className="auth-shell">
       <div className="auth-card">
-        <h1>🏹 HeroPath</h1>
+        <img src="/heropath-logo.png" alt="HeroPath" style={{ display: 'block', height: '64px', width: 'auto', margin: '0 auto 24px' }} />
 
         <form onSubmit={handleAuth}>
           {!isLogin && (

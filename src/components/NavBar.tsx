@@ -18,9 +18,9 @@ export default function NavBar() {
 
   return (
     <header className="app-nav">
-      <div className="app-brand">
-        <span>HeroPath</span>
-      </div>
+      <Link href="/dashboard" className="app-brand" aria-label="HeroPath">
+        <img src="/heropath-logo.png" alt="HeroPath" style={{ height: '34px', width: 'auto', display: 'block' }} />
+      </Link>
 
       <nav className="nav-links">
         {links.map(link => (

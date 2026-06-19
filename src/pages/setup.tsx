@@ -71,6 +71,33 @@ export default function SetupPage() {
 
   const [resetting, setResetting] = useState(false)
   const [testingEmail, setTestingEmail] = useState(false)
+  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
+  const [pwLoading, setPwLoading] = useState(false)
+
+  async function changePassword(e: any) {
+    e.preventDefault()
+    if (pwForm.newPassword.length < 6) { alert('La nueva contraseña debe tener al menos 6 caracteres'); return }
+    if (pwForm.newPassword !== pwForm.confirm) { alert('Las contraseñas nuevas no coinciden'); return }
+    setPwLoading(true)
+    try {
+      const res = await fetch(`/api/users/${userId}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) {
+        alert('Contraseña actualizada ✅')
+        setPwForm({ currentPassword: '', newPassword: '', confirm: '' })
+      } else {
+        alert(`Error: ${data.error || 'No se pudo cambiar'}`)
+      }
+    } catch (e) {
+      console.error(e); alert('Error al cambiar la contraseña')
+    } finally {
+      setPwLoading(false)
+    }
+  }
 
   async function sendTestEmail() {
     setTestingEmail(true)
@@ -178,6 +205,22 @@ export default function SetupPage() {
         <p className="page-text">
           Estos horarios se aplican a <strong>todos tus objetivos</strong> y se respetan según tu zona horaria configurada en el Perfil.
         </p>
+      </div>
+
+      <div className="page-card">
+        <h2 className="page-heading">🔒 Contraseña</h2>
+        <p className="page-text">Cambia tu contraseña de acceso.</p>
+        <form onSubmit={changePassword}>
+          <label className="input-label">Contraseña actual</label>
+          <input type="password" value={pwForm.currentPassword} onChange={(e) => setPwForm({ ...pwForm, currentPassword: e.target.value })} autoComplete="current-password" />
+          <label className="input-label" style={{ marginTop: '14px' }}>Nueva contraseña</label>
+          <input type="password" value={pwForm.newPassword} onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })} autoComplete="new-password" />
+          <label className="input-label" style={{ marginTop: '14px' }}>Repite la nueva contraseña</label>
+          <input type="password" value={pwForm.confirm} onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })} autoComplete="new-password" />
+          <button className="button-primary" type="submit" disabled={pwLoading} style={{ marginTop: '18px' }}>
+            {pwLoading ? 'Guardando…' : 'Cambiar contraseña'}
+          </button>
+        </form>
       </div>
 
       <div className="page-card">

@@ -103,7 +103,8 @@ export default function Profile() {
       }
       const data = await res.json()
       setUser(data)
-      setFormData(data)
+      // Don't pre-fill the email as the display name (old accounts defaulted name to email)
+      setFormData({ ...data, name: data.name && !data.name.includes('@') ? data.name : '' })
     } catch (e) {
       console.error('Failed to load user', e)
       router.push('/')
@@ -185,7 +186,19 @@ export default function Profile() {
               value={formData.name || ''}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               type="text"
+              placeholder="¿Cómo quieres que te saludemos?"
             />
+            <p style={{ fontSize: '12px', color: '#36f3ff', marginTop: '6px' }}>
+              Así te saludaremos en la app (ej: tu nombre). No es tu email.
+            </p>
+          </div>
+
+          <div style={{ marginBottom: '18px' }}>
+            <label className="input-label">Email</label>
+            <input value={user.email} type="email" readOnly style={{ opacity: 0.7 }} />
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '6px' }}>
+              Tu email de acceso (no se puede cambiar aquí).
+            </p>
           </div>
 
           <div style={{ marginBottom: '18px' }}>

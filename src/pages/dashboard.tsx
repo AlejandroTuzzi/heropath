@@ -48,11 +48,11 @@ export default function Dashboard() {
       <div className="hero-panel">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <div>
-            <h1>HeroPath</h1>
-            <p className="page-text">Administra tus metas y aspiraciones con el estilo oscuro de tu marca.</p>
+            <img src="/heropath-logo.png" alt="HeroPath" style={{ height: '52px', width: 'auto', display: 'block', marginBottom: '10px' }} />
+            <p className="page-text" style={{ marginBottom: 0 }}>Bienvenido al camino del héroe</p>
           </div>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ color: '#36f3ff' }}>👋 {user.name || user.email}</span>
+            <span style={{ color: '#36f3ff' }}>👋 {user.name && !user.name.includes('@') ? user.name : 'Héroe'}</span>
             <button
               className="button-ghost"
               type="button"
