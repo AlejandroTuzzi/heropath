@@ -24,6 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const dstr = (date ? String(date) : new Date().toISOString()).slice(0, 10)
       const entryDate = new Date(dstr + 'T00:00:00.000Z')
 
+      // Reject future days (UTC-midnight of a future date is later than "now")
+      if (entryDate.getTime() > Date.now()) {
+        return res.status(400).json({ error: 'No puedes registrar un día que aún no ha llegado' })
+      }
+
       // Find or create entry
       let entry = await prisma.goalEntry.findFirst({
         where: {

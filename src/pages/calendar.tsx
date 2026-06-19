@@ -59,6 +59,7 @@ export default function CalendarPage() {
   }
 
   const today = dayjs.utc()
+  const todayStr = new Date().toLocaleDateString('en-CA') // user's local today (YYYY-MM-DD)
 
   return (
     <div className="page-shell">
@@ -90,7 +91,8 @@ export default function CalendarPage() {
                 if (!day) return <div key={i} />
                 const dayGoals = goalsForDay(day)
                 const isToday = day.isSame(today, 'day')
-                const clickable = dayGoals.length > 0
+                const isFuture = day.format('YYYY-MM-DD') > todayStr
+                const clickable = dayGoals.length > 0 && !isFuture
                 return (
                   <div
                     key={i}
@@ -102,11 +104,12 @@ export default function CalendarPage() {
                       background: 'rgba(255,255,255,0.03)',
                       padding: '8px',
                       cursor: clickable ? 'pointer' : 'default',
+                      opacity: isFuture ? 0.4 : 1,
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '6px'
                     }}
-                    title={dayGoals.length ? `${dayGoals.length} meta(s) — clic para registrar` : ''}
+                    title={isFuture ? 'Día futuro' : (dayGoals.length ? `${dayGoals.length} meta(s) — clic para registrar` : '')}
                   >
                     <span style={{ fontSize: '12px', color: isToday ? '#36f3ff' : 'rgba(255,255,255,0.6)', fontWeight: isToday ? 700 : 400 }}>
                       {day.format('D')}

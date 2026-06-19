@@ -28,6 +28,7 @@ export default function UpdateResults() {
 
   const allGoals = Array.isArray(goalsData) ? goalsData : []
   const dayObj = typeof date === 'string' ? dayjs.utc(date) : dayjs.utc()
+  const isFuture = typeof date === 'string' && date > new Date().toLocaleDateString('en-CA')
   const weekday = dayObj.day() // 0=Sun..6=Sat
   // Only goals scheduled this weekday and active on this date
   const scheduled = allGoals.filter((g: any) => {
@@ -83,6 +84,18 @@ export default function UpdateResults() {
 
   if (!userId) return <div className="page-shell" style={{ color: '#d8ff36', padding: '40px' }}>Cargando...</div>
   if (isLoading) return <div className="page-shell" style={{ color: '#d8ff36', padding: '40px' }}>Cargando tus metas...</div>
+
+  if (isFuture) {
+    return (
+      <div className="page-shell">
+        <section className="page-card">
+          <h1 className="page-heading">Ese día aún no llega ⏳</h1>
+          <p className="page-text">Solo puedes registrar resultados de hoy o de días pasados. Vuelve cuando llegue {dayObj.format('DD/MM/YYYY')}.</p>
+          <button className="button-primary" type="button" onClick={() => router.push('/dashboard')}>Volver a Metas</button>
+        </section>
+      </div>
+    )
+  }
 
   if (feedback) {
     return (

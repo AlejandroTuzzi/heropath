@@ -43,6 +43,8 @@ export default function GoalDetail() {
   const delta = Math.round((goal.score - 100) * 10) / 10
   const linkedAspirations = goal.aspirations || []
   const linkedShortcomings = goal.shortcomings || []
+  // user's local "today" (browser timezone) as YYYY-MM-DD, to disable future days
+  const todayStr = new Date().toLocaleDateString('en-CA')
 
   function startEdit() {
     setForm({
@@ -281,7 +283,9 @@ export default function GoalDetail() {
                 const day = mm.first.date(i + 1)
                 const inRange = (day.isAfter(startDate) || day.isSame(startDate, 'day')) && (day.isBefore(endDate) || day.isSame(endDate, 'day'))
                 const scheduled = inRange && isScheduled(day, weekdays)
-                if (!scheduled) {
+                const isFuture = day.format('YYYY-MM-DD') > todayStr
+                if (!scheduled || isFuture) {
+                  // non-scheduled OR future days: shown but not clickable
                   return <div key={i} style={{ aspectRatio: '1', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>{day.format('D')}</div>
                 }
                 const entry = entries.find((e: any) => dayjs.utc(e.date).isSame(day, 'day'))
