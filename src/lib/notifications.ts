@@ -94,16 +94,22 @@ export async function processTick() {
     if (!u.email) continue
     const { hour, date } = localInfo(u.timezone)
 
+    // Only mark "sent" once an email actually goes out, so a goal created
+    // during the trigger hour still gets its email on the next tick.
     if (hour === u.dayStartHour) {
-      const fresh = await r.set(`sent:mot:${u.id}:${date}`, '1', 'EX', 93600, 'NX')
-      if (fresh) {
-        try { await sendMotivationEmail(u.id) } catch (e) { console.error('[tick motivation]', e) }
+      const key = `sent:mot:${u.id}:${date}`
+      if (!(await r.get(key))) {
+        try {
+          if (await sendMotivationEmail(u.id) === 'sent') await r.set(key, '1', 'EX', 93600)
+        } catch (e) { console.error('[tick motivation]', e) }
       }
     }
     if (hour === u.dayEndHour) {
-      const fresh = await r.set(`sent:eod:${u.id}:${date}`, '1', 'EX', 93600, 'NX')
-      if (fresh) {
-        try { await sendResultsRequestEmail(u.id) } catch (e) { console.error('[tick results]', e) }
+      const key = `sent:eod:${u.id}:${date}`
+      if (!(await r.get(key))) {
+        try {
+          if (await sendResultsRequestEmail(u.id) === 'sent') await r.set(key, '1', 'EX', 93600)
+        } catch (e) { console.error('[tick results]', e) }
       }
     }
   }
