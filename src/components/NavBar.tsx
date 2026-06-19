@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useState } from 'react'
 
 const links = [
   { href: '/', label: 'Inicio' },
@@ -15,16 +16,26 @@ const links = [
 
 export default function NavBar() {
   const { pathname } = useRouter()
+  const [open, setOpen] = useState(false)
 
   return (
     <header className="app-nav">
-      <Link href="/dashboard" className="app-brand" aria-label="HeroPath">
+      <Link href="/dashboard" className="app-brand" aria-label="HeroPath" onClick={() => setOpen(false)}>
         <img src="/heropath-logo.png" alt="HeroPath" style={{ height: '34px', width: 'auto', display: 'block' }} />
       </Link>
 
-      <nav className="nav-links">
+      <button className="nav-toggle" type="button" aria-label="Menú" aria-expanded={open} onClick={() => setOpen(o => !o)}>
+        {open ? '✕' : '☰'}
+      </button>
+
+      <nav className={`nav-links ${open ? 'open' : ''}`}>
         {links.map(link => (
-          <Link key={link.href} href={link.href} className={`nav-link ${pathname === link.href ? 'active' : ''}`}>
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={() => setOpen(false)}
+            className={`nav-link ${pathname === link.href ? 'active' : ''}`}
+          >
             {link.label}
           </Link>
         ))}

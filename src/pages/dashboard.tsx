@@ -132,7 +132,7 @@ export default function Dashboard() {
                 <div
                   key={goal.id}
                   className="card"
-                  style={{ borderLeft: `4px solid ${isActive ? '#d8ff36' : 'rgba(255,255,255,0.16)'}`, display: 'flex', flexDirection: 'column' }}
+                  style={{ boxShadow: `inset 4px 0 0 0 ${isActive ? '#d8ff36' : 'rgba(255,255,255,0.16)'}`, display: 'flex', flexDirection: 'column', minWidth: 0 }}
                 >
                   <h3>{goal.title}</h3>
                   <p>{goal.description}</p>

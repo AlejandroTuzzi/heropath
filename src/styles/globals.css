@@ -278,3 +278,42 @@ textarea {
   color: #d8ff36;
   border: 1px solid rgba(216,255,54,0.2);
 }
+
+/* ---- Hamburger menu (mobile) ---- */
+.nav-toggle {
+  display: none;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(216,255,54,0.25);
+  color: #d8ff36;
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 22px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+/* Collapse the nav into a hamburger on narrow screens */
+@media (max-width: 820px) {
+  .app-nav { flex-wrap: wrap; padding: 12px 16px; }
+  .nav-toggle { display: block; }
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .nav-links.open { display: flex; }
+  .nav-link { width: 100%; text-align: center; padding: 12px 16px; }
+}
+
+/* Tighter spacing on phones (gain horizontal room) */
+@media (max-width: 640px) {
+  .app-shell { padding: 0; min-height: calc(100vh - 64px); }
+  .page-shell { padding: 12px 12px 40px; gap: 16px; }
+  .page-card { padding: 18px 14px; border-radius: 18px; }
+  .hero-panel { padding: 18px 14px; }
+  .card { padding: 18px 14px; }
+  .card-grid { gap: 14px; }
+  .auth-card { padding: 24px 18px; }
+}
