@@ -117,6 +117,69 @@ export default function SetupPage() {
     }
   }
 
+  // ---- Push notifications ----
+  const [pushState, setPushState] = useState<'unsupported' | 'off' | 'on' | 'busy'>('off')
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) { setPushState('unsupported'); return }
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (!reg) { setPushState('off'); return }
+      reg.pushManager.getSubscription().then(sub => setPushState(sub ? 'on' : 'off'))
+    }).catch(() => setPushState('off'))
+  }, [])
+
+  function urlBase64ToUint8Array(base64String: string) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+    const raw = atob(base64)
+    const arr = new Uint8Array(raw.length)
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i)
+    return arr
+  }
+
+  async function enablePush() {
+    setPushState('busy')
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js')
+      await navigator.serviceWorker.ready
+      const perm = await Notification.requestPermission()
+      if (perm !== 'granted') { alert('Permiso de notificaciones denegado'); setPushState('off'); return }
+      const { publicKey } = await fetch('/api/push/public-key').then(r => r.json())
+      if (!publicKey) { alert('Push no está configurado en el servidor (faltan claves VAPID)'); setPushState('off'); return }
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) })
+      const res = await fetch('/api/push/subscribe', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, subscription: sub.toJSON() })
+      })
+      if (res.ok) { setPushState('on'); alert('Notificaciones activadas ✅') }
+      else { setPushState('off'); alert('No se pudo activar') }
+    } catch (e) {
+      console.error(e); alert('Error al activar notificaciones'); setPushState('off')
+    }
+  }
+
+  async function disablePush() {
+    setPushState('busy')
+    try {
+      const reg = await navigator.serviceWorker.getRegistration()
+      const sub = reg ? await reg.pushManager.getSubscription() : null
+      if (sub) {
+        await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) })
+        await sub.unsubscribe()
+      }
+      setPushState('off')
+    } catch (e) {
+      console.error(e); setPushState('on')
+    }
+  }
+
+  async function testPush() {
+    const res = await fetch('/api/push/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId }) })
+    const d = await res.json().catch(() => ({}))
+    alert(res.ok ? 'Push de prueba enviado 🔔' : (d.error || 'No se pudo enviar'))
+  }
+
   async function resetApp() {
     if (!confirm('⚠️ Esto eliminará TODAS tus metas, ambiciones, falencias, influencias, registros e historial. Tu cuenta y configuración se mantienen. ¿Continuar?')) return
     if (!confirm('Esta acción NO se puede deshacer. ¿Reiniciar la app de verdad?')) return
@@ -232,6 +295,25 @@ export default function SetupPage() {
         <button className="button-secondary" type="button" onClick={sendTestEmail} disabled={testingEmail} style={{ width: 'auto' }}>
           {testingEmail ? 'Enviando…' : 'Enviar correo de prueba'}
         </button>
+      </div>
+
+      <div className="page-card">
+        <h2 className="page-heading">🔔 Notificaciones push</h2>
+        <p className="page-text">
+          Recibe avisos en <strong>este dispositivo</strong> a tus horarios (mañana y noche), además del correo.
+        </p>
+        {pushState === 'unsupported' ? (
+          <div className="alert">Este navegador no soporta notificaciones push. En iPhone, primero añade HeroPath a la pantalla de inicio.</div>
+        ) : pushState === 'on' ? (
+          <div className="button-row">
+            <button className="button-secondary" type="button" onClick={disablePush} style={{ width: 'auto' }}>Desactivar</button>
+            <button className="button-ghost" type="button" onClick={testPush}>Enviar prueba 🔔</button>
+          </div>
+        ) : (
+          <button className="button-primary" type="button" disabled={pushState === 'busy'} onClick={enablePush} style={{ width: 'auto' }}>
+            {pushState === 'busy' ? 'Activando…' : 'Activar notificaciones'}
+          </button>
+        )}
       </div>
 
       <div className="page-card" style={{ borderColor: 'rgba(244,67,54,0.35)' }}>

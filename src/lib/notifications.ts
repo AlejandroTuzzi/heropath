@@ -2,6 +2,7 @@ import { prisma } from './prisma'
 import { generateTips } from './openai'
 import { sendDailyMotivationEmail, sendEndOfDayEmail, sendEmail } from './email'
 import { getRedis } from './redis'
+import { sendPushToUser } from './push'
 
 const WD: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
 
@@ -70,6 +71,34 @@ export async function sendResultsRequestEmail(userId: string): Promise<string> {
   return 'sent'
 }
 
+// Morning push (only if there are goals scheduled today)
+export async function sendMotivationPush(userId: string): Promise<number> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { goals: true } })
+  if (!user) return 0
+  const { weekday } = localInfo(user.timezone)
+  const goals = goalsScheduledToday(user.goals, weekday)
+  if (goals.length === 0) return 0
+  return sendPushToUser(userId, {
+    title: '🌅 HeroPath',
+    body: `Tienes ${goals.length} meta(s) hoy. ¡A por ellas!`,
+    url: '/dashboard'
+  })
+}
+
+// Evening push: register results
+export async function sendResultsPush(userId: string): Promise<number> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { goals: true } })
+  if (!user) return 0
+  const info = localInfo(user.timezone)
+  const goals = goalsScheduledToday(user.goals, info.weekday)
+  if (goals.length === 0) return 0
+  return sendPushToUser(userId, {
+    title: '🌙 HeroPath',
+    body: 'Hora de registrar cómo te fue hoy.',
+    url: `/update-results?userId=${userId}&date=${info.date}`
+  })
+}
+
 // Immediate test email to verify SendGrid configuration
 export async function sendTestEmail(userId: string): Promise<string> {
   const user = await prisma.user.findUnique({ where: { id: userId } })
@@ -94,22 +123,24 @@ export async function processTick() {
     if (!u.email) continue
     const { hour, date } = localInfo(u.timezone)
 
-    // Only mark "sent" once an email actually goes out, so a goal created
-    // during the trigger hour still gets its email on the next tick.
+    // Only mark "sent" once a notification actually goes out, so a goal created
+    // during the trigger hour still gets notified on the next tick.
     if (hour === u.dayStartHour) {
       const key = `sent:mot:${u.id}:${date}`
       if (!(await r.get(key))) {
-        try {
-          if (await sendMotivationEmail(u.id) === 'sent') await r.set(key, '1', 'EX', 93600)
-        } catch (e) { console.error('[tick motivation]', e) }
+        let any = false
+        try { if (await sendMotivationEmail(u.id) === 'sent') any = true } catch (e) { console.error('[tick motivation email]', e) }
+        try { if (await sendMotivationPush(u.id) > 0) any = true } catch (e) { console.error('[tick motivation push]', e) }
+        if (any) await r.set(key, '1', 'EX', 93600)
       }
     }
     if (hour === u.dayEndHour) {
       const key = `sent:eod:${u.id}:${date}`
       if (!(await r.get(key))) {
-        try {
-          if (await sendResultsRequestEmail(u.id) === 'sent') await r.set(key, '1', 'EX', 93600)
-        } catch (e) { console.error('[tick results]', e) }
+        let any = false
+        try { if (await sendResultsRequestEmail(u.id) === 'sent') any = true } catch (e) { console.error('[tick results email]', e) }
+        try { if (await sendResultsPush(u.id) > 0) any = true } catch (e) { console.error('[tick results push]', e) }
+        if (any) await r.set(key, '1', 'EX', 93600)
       }
     }
   }
