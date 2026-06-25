@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
+import { computeScore } from '../../../lib/scoring'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { goalId } = req.query
@@ -15,7 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         include: { category: true, aspirations: true, shortcomings: true, entries: { orderBy: { date: 'asc' } } }
       })
       if (!goal) return res.status(404).json({ error: 'not found' })
-      return res.status(200).json(goal)
+      const score = computeScore(goal as any, goal.entries as any)
+      return res.status(200).json({ ...goal, score })
     } catch (e) {
       return res.status(500).json({ error: 'server error' })
     }

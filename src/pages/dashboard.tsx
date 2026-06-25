@@ -123,7 +123,7 @@ export default function Dashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <h2 style={{ margin: 0 }}>Mis Hero Goals ({goals.length})</h2>
           <button className="button-ghost" type="button" onClick={() => router.push('/progreso')}>
-            ⭐ Score global: {goals.length ? Math.round((goals.reduce((s: number, g: any) => s + (g.score || 100), 0) / goals.length) * 10) / 10 : 100}% · Ver progreso →
+            ⭐ Score global: {Math.round((100 + goals.reduce((s: number, g: any) => s + ((g.score || 100) - 100), 0)) * 10) / 10}% · Ver progreso →
           </button>
         </div>
         {goalCategories.length > 1 && (

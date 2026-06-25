@@ -70,6 +70,32 @@ function weekStart(date: Dayjs): Dayjs {
   return date.startOf('day').subtract((date.day() + 6) % 7, 'day')
 }
 
+// Scheduled days the goal actually had in the Mon–Sun week starting at weekStartD
+function scheduledDaysInWeek(weekStartD: Dayjs, goal: GoalLike): number {
+  const days = wd(goal)
+  const gStart = u(goal.startDate).startOf('day')
+  const gEnd = u(goal.endDate).startOf('day')
+  let count = 0
+  for (let i = 0; i < 7; i++) {
+    const d = weekStartD.add(i, 'day')
+    if (!days.includes(d.day())) continue
+    if (d.isBefore(gStart) || d.isAfter(gEnd)) continue
+    count++
+  }
+  return count
+}
+
+// A week is only scored if the goal was active the FULL Mon–Sun and there were
+// enough scheduled days to fairly meet the target. Partial weeks (the goal
+// started/ended mid-week) are neutral — they neither add nor subtract.
+function weekCounts(weekStartD: Dayjs, goal: GoalLike, target: number): boolean {
+  const weekEnd = weekStartD.add(6, 'day')
+  const gStart = u(goal.startDate).startOf('day')
+  const gEnd = u(goal.endDate).startOf('day')
+  if (weekStartD.isBefore(gStart) || weekEnd.isAfter(gEnd)) return false
+  return scheduledDaysInWeek(weekStartD, goal) >= target
+}
+
 const round1 = (n: number) => Math.round(n * 10) / 10
 
 // ---- STRICT: per scheduled day. Done +1, Half +0.5, Exception 0, Fail -(occurrence index) ----
@@ -107,7 +133,8 @@ export function rigorousScore(goal: GoalLike, entries: EntryLike[], now: Dayjs =
   }
 
   let score = 100
-  for (const credit of buckets.values()) {
+  for (const [key, credit] of buckets.entries()) {
+    if (!weekCounts(u(key), goal, target)) continue // partial week — neutral
     score += credit >= target ? 1 : -1
   }
   return round1(score)
@@ -184,6 +211,7 @@ function rigorousSeries(goal: GoalLike, entries: EntryLike[], now: Dayjs): { lab
   const out: { label: string; score: number }[] = []
   let score = 100
   for (const key of Array.from(buckets.keys()).sort()) {
+    if (!weekCounts(u(key), goal, target)) continue
     score += (buckets.get(key) || 0) >= target ? 1 : -1
     out.push({ label: 'Sem ' + u(key).format('DD/MM'), score: round1(score) })
   }
