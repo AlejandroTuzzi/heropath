@@ -9,6 +9,7 @@ const links = [
   { href: '/influences', label: 'Influencias' },
   { href: '/dashboard', label: 'Metas' },
   { href: '/categories', label: 'Categorías' },
+  { href: '/suplicas', label: 'Súplicas' },
   { href: '/calendar', label: 'Calendario' },
   { href: '/progreso', label: 'Progreso' },
   { href: '/profile', label: 'Perfil' },

@@ -24,9 +24,37 @@ export default function GoalDetail() {
   const { data: entriesData } = useSWR(id ? `/api/goals/${id}/entry` : null, fetcher)
   const { data: aspirationsData } = useSWR(goal?.userId ? `/api/users/${goal.userId}/aspirations` : null, fetcher)
   const { data: shortcomingsData } = useSWR(goal?.userId ? `/api/users/${goal.userId}/shortcomings` : null, fetcher)
+  const { data: suplicasData, mutate: mutateSuplicas } = useSWR(id ? `/api/goals/${id}/suplica` : null, fetcher)
   const entries = Array.isArray(entriesData) ? entriesData : []
   const allAspirations = Array.isArray(aspirationsData) ? aspirationsData : []
   const allShortcomings = Array.isArray(shortcomingsData) ? shortcomingsData : []
+  const suplicas = Array.isArray(suplicasData) ? suplicasData : []
+
+  const [suplicaOpen, setSuplicaOpen] = useState(false)
+  const [suplicaSituation, setSuplicaSituation] = useState('')
+  const [suplicaLoading, setSuplicaLoading] = useState(false)
+
+  async function sendSuplica() {
+    setSuplicaLoading(true)
+    try {
+      const res = await fetch(`/api/goals/${id}/suplica`, {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ situation: suplicaSituation })
+      })
+      if (res.ok) {
+        setSuplicaSituation('')
+        setSuplicaOpen(false)
+        await mutateSuplicas()
+      } else {
+        alert('No se pudo enviar la súplica')
+      }
+    } catch (e) {
+      console.error(e); alert('Error al enviar la súplica')
+    } finally {
+      setSuplicaLoading(false)
+    }
+  }
 
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<any>({ title: '', description: '', startDate: '', endDate: '', strictness: 'strict', weekdays: [] as number[], weeklyTarget: 3, aspirationIds: [] as string[], shortcomingIds: [] as string[] })
@@ -219,6 +247,48 @@ export default function GoalDetail() {
         </div>
         <div className="card"><h3>📅 Días programados</h3><p style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{totalScheduled}</p></div>
         <div className="card"><h3>🎯 Categoría</h3><p style={{ fontSize: '16px', color: '#fff' }}>{goal.category?.name || 'General'}</p></div>
+      </section>
+
+      {/* Súplica: SOS when about to fail */}
+      <section className="page-card" style={{ borderColor: 'rgba(255,54,196,0.3)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div>
+            <h2 className="page-heading" style={{ marginBottom: '4px', color: '#ff36c4' }}>🙏 Súplica</h2>
+            <p className="page-text" style={{ marginBottom: 0 }}>¿A punto de recaer? Pide ayuda y tu coach te sostiene en el momento.</p>
+          </div>
+          {!suplicaOpen && (
+            <button className="button-primary" type="button" onClick={() => setSuplicaOpen(true)} style={{ width: 'auto' }}>Pedir ayuda</button>
+          )}
+        </div>
+
+        {suplicaOpen && (
+          <div style={{ marginTop: '16px' }}>
+            <label className="input-label">¿Qué está pasando ahora mismo?</label>
+            <textarea
+              value={suplicaSituation}
+              onChange={e => setSuplicaSituation(e.target.value)}
+              placeholder="Ej: estoy en un cumpleaños y me muero por un pedazo de torta…"
+            />
+            <div className="button-row" style={{ marginTop: '14px' }}>
+              <button className="button-primary" type="button" onClick={sendSuplica} disabled={suplicaLoading} style={{ width: 'auto' }}>
+                {suplicaLoading ? 'Pidiendo ayuda…' : 'Enviar súplica'}
+              </button>
+              <button className="button-secondary" type="button" onClick={() => { setSuplicaOpen(false); setSuplicaSituation('') }} style={{ width: 'auto' }}>Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        {suplicas.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '18px' }}>
+            {suplicas.map((s: any) => (
+              <div key={s.id} style={{ padding: '14px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <small style={{ color: '#36f3ff' }}>{dayjs.utc(s.date).format('DD/MM/YYYY')}</small>
+                {s.situation && <p style={{ margin: '6px 0 0', fontStyle: 'italic', color: 'rgba(255,255,255,0.65)' }}>“{s.situation}”</p>}
+                <p style={{ margin: '10px 0 0', whiteSpace: 'pre-line', color: 'rgba(255,255,255,0.88)', lineHeight: 1.7 }}>{s.response}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* AI: link to aspirations */}

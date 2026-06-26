@@ -26,6 +26,7 @@ model User {
   goals     Goal[]
   feedbacks Feedback[]
   pushSubscriptions PushSubscription[]
+  suplicas  Suplica[]
 }
 
 model PushSubscription {
@@ -87,8 +88,23 @@ model Goal {
   shortcomingLink String? // AI explanation of why this goal fights the linked shortcomings
   aiAdvice    String?  // AI-generated tips for achieving this goal
   entries     GoalEntry[]
+  suplicas    Suplica[]
   score       Float    @default(100)
   createdAt   DateTime @default(now())
+}
+
+// A "súplica": an SOS the user sends when about to fail a goal; the AI replies
+// with context-aware support + 5 tips to get through the relapse moment.
+model Suplica {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goalId    String
+  date      DateTime @default(now())
+  situation String?  // what the user is going through right now
+  response  String   // the AI's reply
+  createdAt DateTime @default(now())
 }
 
 model GoalEntry {
